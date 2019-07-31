@@ -1,2 +1,2 @@
 # orbits
-Draw de orbits for a set of points in the plane
+Draw the orbits for a set of points in the plane
