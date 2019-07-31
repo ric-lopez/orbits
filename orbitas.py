@@ -37,29 +37,57 @@ def antipodal(p,q,a):
         print("it´s de same point")
         return p
 
+def lado_p_a_segmento(v1, v2, p):
+        """Determina de que lado se encuentra el punto 'p' con respecto a la arista (v1, v2)"""
+        #area = (v2.getX()-v1.getX())*(p.getY()- v1.getY())-(p.getX()-v1.getX())*(v2.getY()-v1.getY())
+        area = (v2.x-v1.x)*(p.y- v1.y)-(p.x-v1.x)*(v2.y-v1.y)
+        if (area > 0):
+            lado = "izq"
+        elif (area < 0):
+            lado = "der"
+        else:
+            lado = "col"
+        return lado
+
+
 def calc_angulo(a, b, c):
     #ang = math.degrees(math.atan2(c[1]-b[1], c[0]-b[0]) - math.atan2(a[1]-b[1], a[0]-b[0]))
     ang = math.degrees(math.atan2(c.y-b.y, c.x-b.x) - math.atan2(a.y-b.y, a.x-b.x))
     return ang + 360 if ang < 0 else ang
 
 def calc_tangente(polygon, p):
-    p0 = point(p.x+1, p.y)
+    #p0 = point(p.x+1, p.y)
+    p0 = point(0,0)
     ang_i = None
-    ang_min = 361
-    ang_max = 0
-    p_min = None
-    p_max = None
+    angulos = []
+
     for pi in polygon:
-        ang_i = calc_angulo(p0, p, pi)
-        if(ang_min > ang_i):
-            ang_min = ang_i
-            p_min = pi
-        
-        if(ang_max < ang_i):
-            ang_max = ang_i
-            p_max = pi
+        angulos.append(calc_angulo(p0, p, pi))
+
+    ang_min = min(angulos)
+    ang_max = max(angulos)
+    p_min = polygon[angulos.index(ang_min)]
+    p_max = polygon[angulos.index(ang_max)]
     return (p_min, p_max)
 
+
+# def calc_tangente(polygon, p):
+#     p0 = point(p.x+1, p.y)
+#     ang_i = None
+#     ang_min = 361
+#     ang_max = 0
+#     p_min = None
+#     p_max = None
+#     for pi in polygon:
+#         ang_i = calc_angulo(p0, p, pi)
+#         if(ang_min > ang_i):
+#             ang_min = ang_i
+#             p_min = pi
+        
+#         if(ang_max < ang_i):
+#             ang_max = ang_i
+#             p_max = pi
+#     return (p_min, p_max)
 
 
 def orbita(puntos, p, a):
@@ -81,15 +109,37 @@ def orbita(puntos, p, a):
 def cierre_convexo(puntos):
     puntos_np = np.array(puntos)
     ch = ConvexHull(puntos_np)
-    return ch.simplices
+    v_lista = []
+    for v in ch.vertices:
+        print(ch.points[v])
+        v_lista.append(point(ch.points[v][0],ch.points[v][1]))
+    return v_lista
 
 
-def orbita_convexo(polygon, p, a):
+def orbita_convexo(polygon, p, a, direccion):
     """
     polygon -> conjunto de puntos en orden a visitar
     p -> punto de inicio
     a -> factor de crecimiento
     """
+    tangentes = calc_tangente(polygon, p)
+    vuelta1 = lado_p_a_segmento(tangentes[0], p, tangentes[1])
+    vuelta2 = lado_p_a_segmento(tangentes[1], p, tangentes[0])
+    if(vuelta1 == "der"):
+        t_der = tangentes[1]
+        t_izq = tangentes[0]
+        print(vuelta1)
+        print(t_der)
+        print(vuelta2)
+        print(t_izq)
+    elif(vuelta1 == "izq"):
+        t_izq = tangentes[1]
+        t_der = tangentes[0]
+        print(vuelta1)
+        print(t_der)
+        print(vuelta2)
+        print(t_izq)
+    #vuelta2 = lado_p_a_segmento(tangentes[1], p, tangentes[0])
     return
 
 
@@ -151,15 +201,19 @@ print("tangentes")
 print("-----------------------------------------------------------")
 #print(type(cierre_convexo(ps_lista)))
 #print(cierre_convexo(ps_lista))
-mi_ch = cierre_convexo(ps_lista)
-mi_ch_simplex = []
-for simplex in mi_ch:
-    print(simplex)
-    mi_ch_simplex.append(point(simplex[0], simplex[1]))
-    
-angulos = calc_tangente(mi_ch_simplex, point(random.randrange(20), random.randrange(20)))
+mi_ch = cierre_convexo(ps_lista)    
+#p_inicio = point(random.randrange(20), random.randrange(20))
+p_inicio = point(25, 1)
+print(p_inicio)
+print("------------------------")
+for aux in mi_ch:
+    print(str(aux))
+print("------------------------")    
+angulos = calc_tangente(mi_ch, p_inicio)
 print(angulos[0])
 print(angulos[1])
+print("-------------------------")
+orbita_convexo(mi_ch, p_inicio, 1, "derecha")
 
 # print("------------------------------------------------------")
 # print("sobre el ejex")
